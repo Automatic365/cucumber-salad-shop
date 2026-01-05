@@ -413,10 +413,11 @@
             data.forEach(recipe => {
                 // Check if in cart for specific styling and state
                 const inCart = cart.includes(recipe.id);
-                const selectedClass = inCart ? 'selected-cardring-2 ring-emerald-500' : '';
+                const selectedClass = inCart ? 'selected-card ring-2 ring-emerald-500' : '';
                 const btnText = inCart ? 'Selected' : 'Select';
                 const btnBg = inCart ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-600 hover:bg-stone-300';
 
+                const card = document.createElement('div');
                 card.id = `recipe-card-${recipe.id}`;
                 card.className = `bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden hover:shadow-md transition cursor-pointer flex flex-col h-full relative ${inCart ? 'selected-card' : ''}`;
                 card.onclick = (e) => {
