@@ -551,7 +551,51 @@
                         x: { title: { display: true, text: 'Calories' }, min: 200, max: 550 },
                         y: { title: { display: true, text: 'Protein (g)' }, min: 25, max: 50 }
                     }
-                }
+                },
+                plugins: [{
+                    id: 'quadrants',
+                    beforeDraw: (chart) => {
+                        const { ctx, chartArea: { top, bottom, left, right }, scales: { x, y } } = chart;
+                        const midX = x.getPixelForValue(350);
+                        const midY = y.getPixelForValue(40);
+
+                        // Draw Lines
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = '#e5e7eb'; // Stone-200
+                        ctx.setLineDash([5, 5]);
+
+                        // Vertical Line (350 cal)
+                        ctx.moveTo(midX, top);
+                        ctx.lineTo(midX, bottom);
+
+                        // Horizontal Line (40g pro)
+                        ctx.moveTo(left, midY);
+                        ctx.lineTo(right, midY);
+                        ctx.stroke();
+
+                        // Labels
+                        ctx.font = 'bold 12px sans-serif';
+                        ctx.fillStyle = '#9ca3af'; // Stone-400
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        // Top Left (High Pro, Low Cal)
+                        ctx.fillText('LEAN BUILDER', (left + midX) / 2, (top + midY) / 2);
+
+                        // Top Right (High Pro, High Cal)
+                        ctx.fillText('MASS GAINER', (midX + right) / 2, (top + midY) / 2);
+
+                        // Bottom Left (Low Pro, Low Cal)
+                        ctx.fillText('LIGHTER BITE', (left + midX) / 2, (midY + bottom) / 2);
+
+                        // Bottom Right (Low Pro, High Cal)
+                        ctx.fillText('RICH & HEARTY', (midX + right) / 2, (midY + bottom) / 2);
+
+                        ctx.restore();
+                    }
+                }]
             });
 
             // Bar Chart: Top Health Scores
