@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The High-Protein Cucumber Shake Bar</title>
+    <title>The Cucumber Shake Salad Bar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -11,34 +12,51 @@
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 800px; /* Constrain width on large screens */
+            max-width: 800px;
+            /* Constrain width on large screens */
             margin-left: auto;
             margin-right: auto;
-            height: 300px; /* Base height */
+            height: 300px;
+            /* Base height */
             max-height: 400px;
         }
+
         @media (min-width: 768px) {
             .chart-container {
                 height: 400px;
             }
         }
+
         /* Scrollbar styling for recipe list */
         .recipe-scroll::-webkit-scrollbar {
             width: 8px;
         }
+
         .recipe-scroll::-webkit-scrollbar-track {
-            background: #f1f1f4; 
+            background: #f1f1f4;
         }
+
         .recipe-scroll::-webkit-scrollbar-thumb {
-            background: #d1d5db; 
+            background: #d1d5db;
             border-radius: 4px;
         }
+
         .recipe-scroll::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af; 
+            background: #9ca3af;
+        }
+
+        /* Selected Card Styling */
+        .selected-card {
+            border-color: #10b981 !important;
+            /* Emerald-500 */
+            background-color: #f0fdf4 !important;
+            /* Emerald-50 */
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1), 0 2px 4px -1px rgba(16, 185, 129, 0.06);
         }
     </style>
     <!-- Chosen Palette: Stone & Emerald. Warm neutrals (Stone) for the background to create a calm, organic feel. Emerald green accents to represent the cucumber base and freshness. Slate for text for high readability. -->
 </head>
+
 <body class="bg-stone-50 text-stone-800 font-sans leading-normal tracking-normal">
 
     <!-- Application Structure Plan: 
@@ -55,12 +73,15 @@
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
                     <span class="text-3xl mr-2">🥒</span>
-                    <h1 class="text-xl font-bold text-emerald-800 tracking-tight">The Cucumber Shake Bar</h1>
+                    <h1 class="text-xl font-bold text-emerald-800 tracking-tight">The Cucumber Shake Salad Bar</h1>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button onclick="scrollToSection('recipes')" class="text-stone-600 hover:text-emerald-700 font-medium transition">Recipes</button>
-                    <button onclick="scrollToSection('dashboard')" class="text-stone-600 hover:text-emerald-700 font-medium transition">Analytics</button>
-                    <button onclick="toggleShoppingModal()" class="flex items-center bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full hover:bg-emerald-200 transition">
+                    <button onclick="scrollToSection('recipes')"
+                        class="text-stone-600 hover:text-emerald-700 font-medium transition">Recipes</button>
+                    <button onclick="scrollToSection('dashboard')"
+                        class="text-stone-600 hover:text-emerald-700 font-medium transition">Analytics</button>
+                    <button onclick="toggleShoppingModal()"
+                        class="flex items-center bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full hover:bg-emerald-200 transition">
                         <span class="mr-1">🛒</span> List (<span id="cart-count">0</span>)
                     </button>
                 </div>
@@ -74,7 +95,7 @@
             <div class="text-center">
                 <h2 class="text-4xl font-extrabold sm:text-5xl mb-4">Shake Your Way to 30g+ Protein</h2>
                 <p class="text-xl text-emerald-100 max-w-3xl mx-auto mb-8">
-                    21 delicious, high-volume recipes optimized for the "Shake Method". 
+                    21 delicious, high-volume recipes optimized for the "Shake Method".
                     All recipes guarantee at least 30g of protein purely from meat or seafood sources.
                 </p>
                 <div class="flex justify-center space-x-4 text-sm font-semibold">
@@ -94,19 +115,22 @@
              Viz: Scatter Plot (Protein vs Calories) allows users to see the "Protein Density" instantly. Recipes in the top-left are efficient (High Protein, Low Cal).
              Viz: Bar Chart for Health Scores to visualize the quality gradient of the recipes.
         -->
-        
+
         <!-- Dashboard Section -->
         <section id="dashboard" class="mb-16">
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-stone-800">Macro Analysis Dashboard</h3>
-                <p class="text-stone-600">Visualize the nutritional landscape of all 21 recipes to find your perfect match.</p>
+                <p class="text-stone-600">Visualize the nutritional landscape of all 21 recipes to find your perfect
+                    match.</p>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Chart 1: Protein Efficiency -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-                    <h4 class="text-lg font-semibold text-emerald-900 mb-2">Protein Efficiency (Protein vs. Calories)</h4>
-                    <p class="text-xs text-stone-500 mb-4">Top-Left is optimal for fat loss (High Protein, Low Cal). Bottom-Right is better for bulking.</p>
+                    <h4 class="text-lg font-semibold text-emerald-900 mb-2">Protein Efficiency (Protein vs. Calories)
+                    </h4>
+                    <p class="text-xs text-stone-500 mb-4">Top-Left is optimal for fat loss (High Protein, Low Cal).
+                        Bottom-Right is better for bulking.</p>
                     <div class="chart-container">
                         <canvas id="scatterChart"></canvas>
                     </div>
@@ -115,7 +139,8 @@
                 <!-- Chart 2: Health Score Ranking -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
                     <h4 class="text-lg font-semibold text-emerald-900 mb-2">Top 10 Recipes by Health Score</h4>
-                    <p class="text-xs text-stone-500 mb-4">Based on nutrient density, processing level, and sodium/sugar load.</p>
+                    <p class="text-xs text-stone-500 mb-4">Based on nutrient density, processing level, and sodium/sugar
+                        load.</p>
                     <div class="chart-container">
                         <canvas id="barChart"></canvas>
                     </div>
@@ -125,15 +150,17 @@
 
         <!-- Recipe Explorer Section -->
         <section id="recipes">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm border border-stone-200 sticky top-20 z-40">
+            <div
+                class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm border border-stone-200 sticky top-20 z-40">
                 <div>
                     <h3 class="text-2xl font-bold text-stone-800">Recipe Explorer</h3>
                     <p class="text-sm text-stone-500">Filter by protein type or flavor profile.</p>
                 </div>
-                
+
                 <div class="mt-4 md:mt-0 flex flex-wrap gap-2">
                     <!-- Dynamic Filters -->
-                    <select id="proteinFilter" onchange="filterRecipes()" class="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
+                    <select id="proteinFilter" onchange="filterRecipes()"
+                        class="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
                         <option value="all">All Proteins</option>
                         <option value="Chicken">Chicken</option>
                         <option value="Beef">Beef</option>
@@ -141,7 +168,8 @@
                         <option value="Deli">Deli Meat</option>
                     </select>
 
-                    <select id="sortFilter" onchange="filterRecipes()" class="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
+                    <select id="sortFilter" onchange="filterRecipes()"
+                        class="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
                         <option value="healthDesc">Sort: Health Score (High-Low)</option>
                         <option value="calAsc">Sort: Calories (Low-High)</option>
                         <option value="protDesc">Sort: Protein (High-Low)</option>
@@ -158,26 +186,32 @@
     </main>
 
     <!-- Recipe Detail Modal -->
-    <div id="recipeModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div id="recipeModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title"
+        role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <!-- Background overlay -->
-            <div class="fixed inset-0 bg-stone-800 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+            <div class="fixed inset-0 bg-stone-800 bg-opacity-75 transition-opacity" aria-hidden="true"
+                onclick="closeModal()"></div>
 
             <!-- Modal Panel -->
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+            <div
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                            
+
                             <!-- Header -->
                             <div class="flex justify-between items-start border-b border-stone-100 pb-4 mb-4">
                                 <div>
-                                    <h3 class="text-3xl leading-6 font-extrabold text-emerald-900" id="modalTitle">Recipe Title</h3>
+                                    <h3 class="text-3xl leading-6 font-extrabold text-emerald-900" id="modalTitle">
+                                        Recipe Title</h3>
                                     <div class="mt-2 flex items-center space-x-2">
-                                        <span id="modalHealthBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <span id="modalHealthBadge"
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                             Health Score: 9.6
                                         </span>
-                                        <span id="modalCalories" class="text-sm font-semibold text-stone-500">230 cal</span>
+                                        <span id="modalCalories" class="text-sm font-semibold text-stone-500">230
+                                            cal</span>
                                     </div>
                                 </div>
                                 <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 transition">
@@ -190,17 +224,26 @@
                                 <!-- Left Col: Details & Ingredients -->
                                 <div class="md:col-span-2 space-y-6">
                                     <div>
-                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">The Protein Core</h4>
-                                        <p id="modalProtein" class="text-stone-800 font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">6 oz Cooked Shrimp</p>
+                                        <h4
+                                            class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">
+                                            The Protein Core</h4>
+                                        <p id="modalProtein"
+                                            class="text-stone-800 font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                                            6 oz Cooked Shrimp</p>
                                     </div>
 
                                     <div>
-                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">Base & Sauce</h4>
+                                        <h4
+                                            class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">
+                                            Base & Sauce</h4>
                                         <div class="bg-stone-50 p-4 rounded-lg border border-stone-100">
-                                            <p class="text-sm font-bold text-stone-500 uppercase tracking-wide mb-2">Base</p>
-                                            <p id="modalBase" class="text-stone-700 mb-4">Cucumber, Red Onion, Cilantro</p>
-                                            
-                                            <p class="text-sm font-bold text-stone-500 uppercase tracking-wide mb-2">Shake Sauce</p>
+                                            <p class="text-sm font-bold text-stone-500 uppercase tracking-wide mb-2">
+                                                Base</p>
+                                            <p id="modalBase" class="text-stone-700 mb-4">Cucumber, Red Onion, Cilantro
+                                            </p>
+
+                                            <p class="text-sm font-bold text-stone-500 uppercase tracking-wide mb-2">
+                                                Shake Sauce</p>
                                             <ul id="modalSauce" class="list-disc list-inside text-stone-700 space-y-1">
                                                 <!-- populated by JS -->
                                             </ul>
@@ -208,13 +251,18 @@
                                     </div>
 
                                     <div>
-                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">The Method</h4>
+                                        <h4
+                                            class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">
+                                            The Method</h4>
                                         <p id="modalMethod" class="text-stone-600 italic">Method goes here.</p>
                                     </div>
-                                    
+
                                     <div>
-                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">Shopping List</h4>
-                                        <div id="modalShopping" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-stone-600">
+                                        <h4
+                                            class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">
+                                            Shopping List</h4>
+                                        <div id="modalShopping"
+                                            class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-stone-600">
                                             <!-- populated by JS -->
                                         </div>
                                     </div>
@@ -227,23 +275,28 @@
                                         <div class="chart-container" style="height: 200px; max-height: 200px;">
                                             <canvas id="modalMacroChart"></canvas>
                                         </div>
-                                        <div class="text-center mt-4 grid grid-cols-3 divide-x divide-stone-200 text-xs">
+                                        <div
+                                            class="text-center mt-4 grid grid-cols-3 divide-x divide-stone-200 text-xs">
                                             <div>
-                                                <span class="block font-bold text-emerald-600 text-lg" id="modalPVal">42g</span>
+                                                <span class="block font-bold text-emerald-600 text-lg"
+                                                    id="modalPVal">42g</span>
                                                 <span class="text-stone-400">Protein</span>
                                             </div>
                                             <div>
-                                                <span class="block font-bold text-amber-500 text-lg" id="modalFVal">2g</span>
+                                                <span class="block font-bold text-amber-500 text-lg"
+                                                    id="modalFVal">2g</span>
                                                 <span class="text-stone-400">Fat</span>
                                             </div>
                                             <div>
-                                                <span class="block font-bold text-blue-500 text-lg" id="modalCVal">15g</span>
+                                                <span class="block font-bold text-blue-500 text-lg"
+                                                    id="modalCVal">15g</span>
                                                 <span class="text-stone-400">Carbs</span>
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <button id="modalAddBtn" onclick="toggleItemInCart(currentRecipeId)" class="w-full py-3 rounded-xl font-bold text-white shadow-md transition transform hover:scale-105">
+
+                                    <button id="modalAddBtn" onclick="toggleItemInCart(currentRecipeId)"
+                                        class="w-full py-3 rounded-xl font-bold text-white shadow-md transition transform hover:scale-105">
                                         Add to Shopping List
                                     </button>
                                 </div>
@@ -257,30 +310,38 @@
     </div>
 
     <!-- Shopping List Modal -->
-    <div id="shoppingModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="shopping-title" role="dialog" aria-modal="true">
+    <div id="shoppingModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="shopping-title"
+        role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-stone-800 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="toggleShoppingModal()"></div>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="fixed inset-0 bg-stone-800 bg-opacity-75 transition-opacity" aria-hidden="true"
+                onclick="toggleShoppingModal()"></div>
+            <div
+                class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-2xl font-bold text-emerald-900">Your Shopping List</h3>
-                        <button onclick="toggleShoppingModal()" class="text-stone-400 hover:text-stone-600 text-2xl">&times;</button>
+                        <button onclick="toggleShoppingModal()"
+                            class="text-stone-400 hover:text-stone-600 text-2xl">&times;</button>
                     </div>
-                    
+
                     <div id="shoppingListContent" class="space-y-4 mb-6 recipe-scroll overflow-y-auto max-h-[60vh]">
-                        <p class="text-stone-500 text-center py-8">Your list is empty. Add recipes to generate a list.</p>
+                        <p class="text-stone-500 text-center py-8">Your list is empty. Add recipes to generate a list.
+                        </p>
                     </div>
-                    
+
                     <div class="bg-emerald-50 p-4 rounded-lg">
                         <h4 class="font-bold text-emerald-800 mb-2">Pantry Staples Checklist:</h4>
-                        <p class="text-xs text-stone-600">English Cucumbers (1 per salad), MSG, Salt, Pepper, Garlic, Vinegars (Rice, White, Red Wine), Soy Sauce, Sesame Oil, Mayo/Yogurt.</p>
+                        <p class="text-xs text-stone-600">English Cucumbers (1 per salad), MSG, Salt, Pepper, Garlic,
+                            Vinegars (Rice, White, Red Wine), Soy Sauce, Sesame Oil, Mayo/Yogurt.</p>
                     </div>
                 </div>
                 <div class="bg-stone-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="button" onclick="window.print()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="window.print()"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
                         Print List
                     </button>
-                    <button type="button" onclick="clearCart()" class="mt-3 w-full inline-flex justify-center rounded-md border border-stone-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-stone-700 hover:bg-stone-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="button" onclick="clearCart()"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-stone-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-stone-700 hover:bg-stone-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Clear All
                     </button>
                 </div>
@@ -350,23 +411,38 @@
             grid.innerHTML = '';
 
             data.forEach(recipe => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden hover:shadow-md transition cursor-pointer flex flex-col h-full';
-                card.onclick = () => openRecipeModal(recipe.id);
+                // Check if in cart for specific styling and state
+                const inCart = cart.includes(recipe.id);
+                const selectedClass = inCart ? 'selected-cardring-2 ring-emerald-500' : '';
+                const btnText = inCart ? 'Selected' : 'Select';
+                const btnBg = inCart ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-600 hover:bg-stone-300';
+
+                card.id = `recipe-card-${recipe.id}`;
+                card.className = `bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden hover:shadow-md transition cursor-pointer flex flex-col h-full relative ${inCart ? 'selected-card' : ''}`;
+                card.onclick = (e) => {
+                    // Prevent modal opening if clicking the select button
+                    if (e.target.closest('.select-btn')) return;
+                    openRecipeModal(recipe.id);
+                };
 
                 // Health Score Color Logic
                 let healthColor = 'bg-emerald-100 text-emerald-800';
-                if(recipe.healthScore < 8) healthColor = 'bg-yellow-100 text-yellow-800';
-                if(recipe.healthScore < 7) healthColor = 'bg-red-100 text-red-800';
+                if (recipe.healthScore < 8) healthColor = 'bg-yellow-100 text-yellow-800';
+                if (recipe.healthScore < 7) healthColor = 'bg-red-100 text-red-800';
 
                 // Protein Icon Logic
                 let icon = '🍗';
-                if(recipe.proteinType === 'Beef') icon = '🥩';
-                if(recipe.proteinType === 'Seafood') icon = '🦐';
-                if(recipe.proteinType === 'Deli') icon = '🥪';
+                if (recipe.proteinType === 'Beef') icon = '🥩';
+                if (recipe.proteinType === 'Seafood') icon = '🦐';
+                if (recipe.proteinType === 'Deli') icon = '🥪';
 
                 card.innerHTML = `
-                    <div class="p-6 flex-1">
+                    <div class="absolute top-4 right-4 z-10">
+                        <button onclick="toggleItemInCart(${recipe.id}, true)" class="select-btn px-3 py-1 rounded-full text-xs font-bold transition ${btnBg}">
+                            ${btnText}
+                        </button>
+                    </div>
+                    <div class="p-6 flex-1 pt-12"> <!-- added padding top for button space -->
                         <div class="flex justify-between items-start mb-4">
                             <span class="text-4xl">${icon}</span>
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${healthColor}">
@@ -400,7 +476,7 @@
         function openRecipeModal(id) {
             const recipe = recipes.find(r => r.id === id);
             currentRecipeId = id;
-            if(!recipe) return;
+            if (!recipe) return;
 
             document.getElementById('modalTitle').textContent = recipe.title;
             document.getElementById('modalHealthBadge').textContent = `Health Score: ${recipe.healthScore}`;
@@ -416,10 +492,10 @@
             // Shopping List
             const shoppingDiv = document.getElementById('modalShopping');
             let shoppingHTML = '';
-            if(recipe.shopping.fresh) shoppingHTML += `<div><strong class="block text-emerald-700">Fresh:</strong> ${recipe.shopping.fresh}</div>`;
-            if(recipe.shopping.meat) shoppingHTML += `<div><strong class="block text-emerald-700">Protein:</strong> ${recipe.shopping.meat}</div>`;
-            if(recipe.shopping.dairy) shoppingHTML += `<div><strong class="block text-emerald-700">Dairy:</strong> ${recipe.shopping.dairy}</div>`;
-            if(recipe.shopping.pantry) shoppingHTML += `<div><strong class="block text-emerald-700">Pantry:</strong> ${recipe.shopping.pantry}</div>`;
+            if (recipe.shopping.fresh) shoppingHTML += `<div><strong class="block text-emerald-700">Fresh:</strong> ${recipe.shopping.fresh}</div>`;
+            if (recipe.shopping.meat) shoppingHTML += `<div><strong class="block text-emerald-700">Protein:</strong> ${recipe.shopping.meat}</div>`;
+            if (recipe.shopping.dairy) shoppingHTML += `<div><strong class="block text-emerald-700">Dairy:</strong> ${recipe.shopping.dairy}</div>`;
+            if (recipe.shopping.pantry) shoppingHTML += `<div><strong class="block text-emerald-700">Pantry:</strong> ${recipe.shopping.pantry}</div>`;
             shoppingDiv.innerHTML = shoppingHTML;
 
             // Macros Text
@@ -463,7 +539,7 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return context.raw.title + ': ' + context.raw.y + 'g Protein, ' + context.raw.x + ' Cals';
                                 }
                             }
@@ -479,7 +555,7 @@
 
             // Bar Chart: Top Health Scores
             const barCtx = document.getElementById('barChart').getContext('2d');
-            const sortedByHealth = [...recipes].sort((a,b) => b.healthScore - a.healthScore).slice(0, 10);
+            const sortedByHealth = [...recipes].sort((a, b) => b.healthScore - a.healthScore).slice(0, 10);
             barChartInstance = new Chart(barCtx, {
                 type: 'bar',
                 data: {
@@ -508,7 +584,7 @@
             scatterChartInstance.update();
 
             // Update Bar (Top 10 of filtered)
-            const sorted = [...filteredData].sort((a,b) => b.healthScore - a.healthScore).slice(0, 10);
+            const sorted = [...filteredData].sort((a, b) => b.healthScore - a.healthScore).slice(0, 10);
             barChartInstance.data.labels = sorted.map(r => r.title.substring(0, 15) + '...');
             barChartInstance.data.datasets[0].data = sorted.map(r => r.healthScore);
             barChartInstance.update();
@@ -544,7 +620,7 @@
         }
 
         // --- Shopping List Logic ---
-        function toggleItemInCart(id) {
+        function toggleItemInCart(id, fromGrid = false) {
             const index = cart.indexOf(id);
             if (index === -1) {
                 cart.push(id);
@@ -552,8 +628,36 @@
                 cart.splice(index, 1);
             }
             saveCart();
-            updateModalBtnState();
+
+            // Update Modal Button if open
+            if (currentRecipeId === id) {
+                updateModalBtnState();
+            }
+
             updateCartCount();
+
+            // Be smart: if called from grid, just update that card. If called from modal, we need to update the grid card too.
+            // Actually, simplest is to re-render that specific card or just toggle classes manually for performance, 
+            // but re-rendering all is fast enough for 21 items. Let's do manual DOM update for smoothness.
+            updateGridCardState(id);
+        }
+
+        function updateGridCardState(id) {
+            const card = document.getElementById(`recipe-card-${id}`);
+            if (!card) return; // Might be filtered out currently
+
+            const inCart = cart.includes(id);
+            const btn = card.querySelector('.select-btn');
+
+            if (inCart) {
+                card.classList.add('selected-card');
+                btn.textContent = "Selected";
+                btn.className = "select-btn px-3 py-1 rounded-full text-xs font-bold transition bg-emerald-600 text-white";
+            } else {
+                card.classList.remove('selected-card');
+                btn.textContent = "Select";
+                btn.className = "select-btn px-3 py-1 rounded-full text-xs font-bold transition bg-stone-200 text-stone-600 hover:bg-stone-300";
+            }
         }
 
         function updateModalBtnState() {
@@ -594,7 +698,7 @@
             }
 
             const selectedRecipes = recipes.filter(r => cart.includes(r.id));
-            
+
             let html = '';
             selectedRecipes.forEach(r => {
                 html += `
@@ -627,4 +731,5 @@
         }
     </script>
 </body>
+
 </html>
