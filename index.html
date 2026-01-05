@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The High-Protein Cucumber Shake Bar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Styles for Chart Containers as per requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px; /* Constrain width on large screens */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Base height */
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        /* Scrollbar styling for recipe list */
+        .recipe-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .recipe-scroll::-webkit-scrollbar-track {
+            background: #f1f1f4; 
+        }
+        .recipe-scroll::-webkit-scrollbar-thumb {
+            background: #d1d5db; 
+            border-radius: 4px;
+        }
+        .recipe-scroll::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af; 
+        }
+    </style>
+    <!-- Chosen Palette: Stone & Emerald. Warm neutrals (Stone) for the background to create a calm, organic feel. Emerald green accents to represent the cucumber base and freshness. Slate for text for high readability. -->
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans leading-normal tracking-normal">
+
+    <!-- Application Structure Plan: 
+         1. Header & Intro: Sets the context (30g+ meat protein goal) and provides global stats.
+         2. Analysis Dashboard: A high-level visual overview using Chart.js to compare Protein Efficiency (Protein vs Calories) and Health Scores. This helps users quickly identify "best value" recipes.
+         3. Smart Filter & Recipe Grid: The core interaction area. Users can filter by Protein Type (Chicken, Beef, Seafood, Deli) and Flavor Profile. The grid displays summary cards.
+         4. Recipe Detail Modal: Clicking a card opens a detailed view with ingredients, shopping list, and specific macro breakdown.
+         5. Shopping List Generator: Users can 'star' recipes to add them to a consolidated shopping list view.
+    -->
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-3xl mr-2">🥒</span>
+                    <h1 class="text-xl font-bold text-emerald-800 tracking-tight">The Cucumber Shake Bar</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="scrollToSection('recipes')" class="text-stone-600 hover:text-emerald-700 font-medium transition">Recipes</button>
+                    <button onclick="scrollToSection('dashboard')" class="text-stone-600 hover:text-emerald-700 font-medium transition">Analytics</button>
+                    <button onclick="toggleShoppingModal()" class="flex items-center bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full hover:bg-emerald-200 transition">
+                        <span class="mr-1">🛒</span> List (<span id="cart-count">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="bg-emerald-900 text-stone-50 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h2 class="text-4xl font-extrabold sm:text-5xl mb-4">Shake Your Way to 30g+ Protein</h2>
+                <p class="text-xl text-emerald-100 max-w-3xl mx-auto mb-8">
+                    21 delicious, high-volume recipes optimized for the "Shake Method". 
+                    All recipes guarantee at least 30g of protein purely from meat or seafood sources.
+                </p>
+                <div class="flex justify-center space-x-4 text-sm font-semibold">
+                    <div class="bg-emerald-800 px-4 py-2 rounded-lg">Target: >30g Meat Protein</div>
+                    <div class="bg-emerald-800 px-4 py-2 rounded-lg">Base: 1 English Cucumber</div>
+                    <div class="bg-emerald-800 px-4 py-2 rounded-lg">Vessel: 32oz Deli Container</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Visualization & Content Choices:
+             Goal: Compare recipes to help users choose based on goals (e.g., "Shredding" vs "Bulking").
+             Viz: Scatter Plot (Protein vs Calories) allows users to see the "Protein Density" instantly. Recipes in the top-left are efficient (High Protein, Low Cal).
+             Viz: Bar Chart for Health Scores to visualize the quality gradient of the recipes.
+        -->
+        
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="mb-16">
+            <div class="mb-6">
+                <h3 class="text-2xl font-bold text-stone-800">Macro Analysis Dashboard</h3>
+                <p class="text-stone-600">Visualize the nutritional landscape of all 21 recipes to find your perfect match.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Chart 1: Protein Efficiency -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h4 class="text-lg font-semibold text-emerald-900 mb-2">Protein Efficiency (Protein vs. Calories)</h4>
+                    <p class="text-xs text-stone-500 mb-4">Top-Left is optimal for fat loss (High Protein, Low Cal). Bottom-Right is better for bulking.</p>
+                    <div class="chart-container">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Health Score Ranking -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h4 class="text-lg font-semibold text-emerald-900 mb-2">Top 10 Recipes by Health Score</h4>
+                    <p class="text-xs text-stone-500 mb-4">Based on nutrient density, processing level, and sodium/sugar load.</p>
+                    <div class="chart-container">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recipe Explorer Section -->
+        <section id="recipes">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm border border-stone-200 sticky top-20 z-40">
+                <div>
+                    <h3 class="text-2xl font-bold text-stone-800">Recipe Explorer</h3>
+                    <p class="text-sm text-stone-500">Filter by protein type or flavor profile.</p>
+                </div>
+                
+                <div class="mt-4 md:mt-0 flex flex-wrap gap-2">
+                    <!-- Dynamic Filters -->
+                    <select id="proteinFilter" onchange="filterRecipes()" class="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
+                        <option value="all">All Proteins</option>
+                        <option value="Chicken">Chicken</option>
+                        <option value="Beef">Beef</option>
+                        <option value="Seafood">Seafood</option>
+                        <option value="Deli">Deli Meat</option>
+                    </select>
+
+                    <select id="sortFilter" onchange="filterRecipes()" class="bg-stone-50 border border-stone-300 text-stone-800 text-sm rounded-lg focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
+                        <option value="healthDesc">Sort: Health Score (High-Low)</option>
+                        <option value="calAsc">Sort: Calories (Low-High)</option>
+                        <option value="protDesc">Sort: Protein (High-Low)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Recipe Grid -->
+            <div id="recipeGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Recipes injected via JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Recipe Detail Modal -->
+    <div id="recipeModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-stone-800 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+
+            <!-- Modal Panel -->
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            
+                            <!-- Header -->
+                            <div class="flex justify-between items-start border-b border-stone-100 pb-4 mb-4">
+                                <div>
+                                    <h3 class="text-3xl leading-6 font-extrabold text-emerald-900" id="modalTitle">Recipe Title</h3>
+                                    <div class="mt-2 flex items-center space-x-2">
+                                        <span id="modalHealthBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Health Score: 9.6
+                                        </span>
+                                        <span id="modalCalories" class="text-sm font-semibold text-stone-500">230 cal</span>
+                                    </div>
+                                </div>
+                                <button onclick="closeModal()" class="text-stone-400 hover:text-stone-600 transition">
+                                    <span class="text-3xl">&times;</span>
+                                </button>
+                            </div>
+
+                            <!-- Body Layout -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <!-- Left Col: Details & Ingredients -->
+                                <div class="md:col-span-2 space-y-6">
+                                    <div>
+                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">The Protein Core</h4>
+                                        <p id="modalProtein" class="text-stone-800 font-medium bg-emerald-50 p-3 rounded-lg border border-emerald-100">6 oz Cooked Shrimp</p>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">Base & Sauce</h4>
+                                        <div class="bg-stone-50 p-4 rounded-lg border border-stone-100">
+                                            <p class="text-sm font-bold text-stone-500 uppercase tracking-wide mb-2">Base</p>
+                                            <p id="modalBase" class="text-stone-700 mb-4">Cucumber, Red Onion, Cilantro</p>
+                                            
+                                            <p class="text-sm font-bold text-stone-500 uppercase tracking-wide mb-2">Shake Sauce</p>
+                                            <ul id="modalSauce" class="list-disc list-inside text-stone-700 space-y-1">
+                                                <!-- populated by JS -->
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">The Method</h4>
+                                        <p id="modalMethod" class="text-stone-600 italic">Method goes here.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <h4 class="text-lg font-bold text-emerald-700 mb-2 border-b border-emerald-100 pb-1">Shopping List</h4>
+                                        <div id="modalShopping" class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-stone-600">
+                                            <!-- populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Col: Macros Viz & Add Button -->
+                                <div class="space-y-6">
+                                    <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-200">
+                                        <h5 class="text-center font-bold text-stone-700 mb-2">Macro Breakdown</h5>
+                                        <div class="chart-container" style="height: 200px; max-height: 200px;">
+                                            <canvas id="modalMacroChart"></canvas>
+                                        </div>
+                                        <div class="text-center mt-4 grid grid-cols-3 divide-x divide-stone-200 text-xs">
+                                            <div>
+                                                <span class="block font-bold text-emerald-600 text-lg" id="modalPVal">42g</span>
+                                                <span class="text-stone-400">Protein</span>
+                                            </div>
+                                            <div>
+                                                <span class="block font-bold text-amber-500 text-lg" id="modalFVal">2g</span>
+                                                <span class="text-stone-400">Fat</span>
+                                            </div>
+                                            <div>
+                                                <span class="block font-bold text-blue-500 text-lg" id="modalCVal">15g</span>
+                                                <span class="text-stone-400">Carbs</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button id="modalAddBtn" onclick="toggleItemInCart(currentRecipeId)" class="w-full py-3 rounded-xl font-bold text-white shadow-md transition transform hover:scale-105">
+                                        Add to Shopping List
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping List Modal -->
+    <div id="shoppingModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" aria-labelledby="shopping-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 bg-stone-800 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="toggleShoppingModal()"></div>
+            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-emerald-900">Your Shopping List</h3>
+                        <button onclick="toggleShoppingModal()" class="text-stone-400 hover:text-stone-600 text-2xl">&times;</button>
+                    </div>
+                    
+                    <div id="shoppingListContent" class="space-y-4 mb-6 recipe-scroll overflow-y-auto max-h-[60vh]">
+                        <p class="text-stone-500 text-center py-8">Your list is empty. Add recipes to generate a list.</p>
+                    </div>
+                    
+                    <div class="bg-emerald-50 p-4 rounded-lg">
+                        <h4 class="font-bold text-emerald-800 mb-2">Pantry Staples Checklist:</h4>
+                        <p class="text-xs text-stone-600">English Cucumbers (1 per salad), MSG, Salt, Pepper, Garlic, Vinegars (Rice, White, Red Wine), Soy Sauce, Sesame Oil, Mayo/Yogurt.</p>
+                    </div>
+                </div>
+                <div class="bg-stone-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" onclick="window.print()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Print List
+                    </button>
+                    <button type="button" onclick="clearCart()" class="mt-3 w-full inline-flex justify-center rounded-md border border-stone-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-stone-700 hover:bg-stone-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script>
+        // --- Data Source ---
+        const recipes = [
+            { id: 1, title: "Mexican Shrimp Ceviche", healthScore: 9.6, proteinType: "Seafood", proteinDesc: "6 oz Cooked Shrimp (chopped small)", base: "1 English cucumber, ¼ red onion, generous cilantro", sauce: ["Juice of 2 Limes", "1 tsp Tajin", "1 tsp Chamoy (optional)", "Pinch of MSG"], method: "The heavy lime juice 'cooks' the flavor into the shrimp and cucumbers together.", macros: { cal: 230, pro: 42, fat: 2, carb: 15 }, shopping: { fresh: "Cucumber, Red Onion, Cilantro, Limes", meat: "6 oz Cooked Shrimp", pantry: "Tajin, Chamoy, MSG" } },
+            { id: 2, title: "Lemon Oregano Chicken", healthScore: 9.4, proteinType: "Chicken", proteinDesc: "5 oz Grilled Chicken Breast (cubed)", base: "1 English cucumber, handful of cherry tomatoes (halved)", sauce: ["1 tbsp Olive oil", "1 tbsp Red wine vinegar", "1 tsp Dried oregano", "1 clove Garlic (grated)", "Salt & Pepper"], method: "If using cold leftover chicken, chop it roughly the same size as the cucumber chunks.", macros: { cal: 380, pro: 45, fat: 16, carb: 15 }, shopping: { fresh: "Cucumber, Cherry Tomatoes, Garlic", meat: "5 oz Grilled Chicken", pantry: "Olive oil, Red wine vinegar, Dried oregano, Salt, Pepper" } },
+            { id: 3, title: "Thai Larb Style", healthScore: 9.2, proteinType: "Chicken", proteinDesc: "6 oz Ground Turkey or Chicken", base: "1 English cucumber, fresh mint, cilantro, ¼ red onion", sauce: ["Juice of 1 Lime", "1 tbsp Fish Sauce", "1 tsp Chili flakes", "½ tsp Sugar", "Pinch of MSG"], method: "Ensure the ground meat is chilled or room temp before adding to the cucumber to keep it crisp.", macros: { cal: 310, pro: 45, fat: 8, carb: 12 }, shopping: { fresh: "Cucumber, Mint, Cilantro, Red Onion, Lime", meat: "6 oz Ground Turkey", pantry: "Fish sauce, Chili flakes, Sugar, MSG" } },
+            { id: 4, title: "Chipotle Chicken & Jalapeño", healthScore: 9.1, proteinType: "Chicken", proteinDesc: "5 oz Cooked Chicken Breast (Chipotle Seasoned)", base: "1 English cucumber, Fresh Jalapeños (sliced)", sauce: ["2 tbsp Greek Yogurt", "Squirt of Sriracha", "Garlic Powder, Paprika", "Pinch of MSG"], method: "Use meal-prepped chicken seasoned with chipotle or smoked paprika for that 'banging' flavor.", macros: { cal: 330, pro: 43, fat: 8, carb: 12 }, shopping: { fresh: "Cucumber, Jalapeños", meat: "5 oz Chicken Breast", dairy: "Greek Yogurt", pantry: "Sriracha, Garlic/Paprika, MSG" } },
+            { id: 5, title: "Mediterranean Kofta Bowl", healthScore: 9.0, proteinType: "Beef", proteinDesc: "6 oz Lean Ground Beef or Turkey", base: "1 English cucumber, parsley", sauce: ["2 tbsp Greek Yogurt (Base)", "1 tsp Lemon juice", "1 tsp Dried Dill & Oregano", "1 clove Garlic", "Salt & Pepper"], method: "The yogurt creates a Tzatziki-like coating over the ground meat.", macros: { cal: 360, pro: 45, fat: 14, carb: 11 }, shopping: { fresh: "Cucumber, Parsley, Lemon, Garlic", meat: "6 oz Ground Beef", dairy: "Greek Yogurt", pantry: "Dill, Oregano, Salt, Pepper" } },
+            { id: 6, title: "Creamy Dill Chicken", healthScore: 8.9, proteinType: "Chicken", proteinDesc: "5 oz Rotisserie Chicken", base: "1 English cucumber, ¼ red onion", sauce: ["2 tbsp Greek Yogurt", "1 tsp Lemon juice", "1 tbsp Fresh Dill", "Salt & Black pepper"], method: "The yogurt makes this thick; add a splash of water or pickle juice if needed to coat the chicken.", macros: { cal: 310, pro: 40, fat: 10, carb: 13 }, shopping: { fresh: "Cucumber, Rotisserie Chicken, Red Onion, Dill, Lemon", dairy: "Greek Yogurt", pantry: "Salt, Pepper" } },
+            { id: 7, title: "Creamy Spicy Jalapeño Beef", healthScore: 8.8, proteinType: "Beef", proteinDesc: "5 oz Lean Ground Beef (Cooked)", base: "1 English cucumber", sauce: ["2 tbsp Greek Yogurt", "10g Sliced Jalapeños (jarred)", "Splash Soy Sauce", "Sriracha", "Garlic Powder, Paprika", "Pinch of MSG"], method: "The yogurt + sriracha makes a spicy creamy emulsion that coats the beef perfectly.", macros: { cal: 340, pro: 38, fat: 12, carb: 13 }, shopping: { fresh: "Cucumber", meat: "5 oz Lean Ground Beef", dairy: "Greek Yogurt", pantry: "Jarred Jalapeños, Soy Sauce, Sriracha, Spices, MSG" } },
+            { id: 8, title: "California Roll (Prawn)", healthScore: 8.7, proteinType: "Seafood", proteinDesc: "6 oz Cooked Prawns/Shrimp", base: "1 English cucumber, ½ Avocado", sauce: ["1 tbsp Whipped Cream Cheese", "1 tsp Kewpie Mayo", "Soy Sauce", "Sesame Seeds", "Pinch of MSG"], method: "The cream cheese and avocado emulsify when shaken to create that rich 'Philly Roll' texture.", macros: { cal: 350, pro: 40, fat: 16, carb: 12 }, shopping: { fresh: "Cucumber, Avocado", meat: "6 oz Prawns", dairy: "Whipped Cream Cheese", pantry: "Kewpie Mayo, Soy Sauce, Sesame Seeds, MSG" } },
+            { id: 9, title: "Smashed Garlic & Shrimp", healthScore: 8.6, proteinType: "Seafood", proteinDesc: "6 oz Cooked Shrimp", base: "1 English cucumber (smashed)", sauce: ["1 tbsp Black vinegar", "1 tbsp Chili crisp", "1 tsp Soy sauce", "2 cloves Garlic (minced)", "Pinch of MSG"], method: "Smash cucumbers, toss in shrimp, douse with sauce. The acid marinates the shrimp instantly.", macros: { cal: 360, pro: 42, fat: 13, carb: 16 }, shopping: { fresh: "Cucumber, Garlic", meat: "6 oz Cooked Shrimp", pantry: "Black vinegar, Chili crisp, Soy sauce, MSG" } },
+            { id: 10, title: "Soy Garlic Chicken", healthScore: 8.5, proteinType: "Chicken", proteinDesc: "5 oz Cooked Chicken Breast", base: "1 English cucumber", sauce: ["1 tbsp Soy sauce", "1 tsp Sesame oil", "1 tsp Rice vinegar", "1 clove Garlic", "½ tsp Sugar", "Pinch of MSG", "Chili flakes"], method: "Add chicken first to soak up the sauce, then cucumber. Shake hard.", macros: { cal: 320, pro: 45, fat: 7, carb: 14 }, shopping: { fresh: "Cucumber, Chicken Breast, Garlic", pantry: "Soy sauce, Sesame oil, Rice vinegar, Sugar, MSG, Chili flakes" } },
+            { id: 11, title: "Tuna & Sweetcorn Crunch", healthScore: 8.4, proteinType: "Seafood", proteinDesc: "2 cans (5 oz each) Tuna", base: "1 English cucumber, Red Onion", sauce: ["Handful Sweetcorn", "2 tbsp Greek Yogurt", "10ml Lemon Juice", "1 tsp American Mustard", "Garlic Powder, Paprika"], method: "The mustard and lemon cut the fishiness perfectly, making it taste super fresh.", macros: { cal: 345, pro: 44, fat: 4, carb: 18 }, shopping: { fresh: "Cucumber, Red Onion, Lemon", meat: "2 cans Tuna", dairy: "Greek Yogurt", pantry: "Sweetcorn, Mustard, Spices" } },
+            { id: 12, title: "Korean Bulgogi Bowl", healthScore: 8.3, proteinType: "Beef", proteinDesc: "5 oz Lean Ground Beef", base: "1 English cucumber, Green onions", sauce: ["1 tbsp Soy Sauce", "1 tsp Sesame Oil", "1 tsp Brown Sugar", "1 tsp Gochujang/Chili flakes", "1 clove Garlic", "Pinch of MSG"], method: "If cooking the beef fresh, brown it hard. If using leftover beef, the shake will re-hydrate it.", macros: { cal: 350, pro: 38, fat: 15, carb: 14 }, shopping: { fresh: "Cucumber, Green Onions, Garlic", meat: "5 oz Ground Beef", pantry: "Soy sauce, Sesame oil, Brown sugar, Gochujang, MSG" } },
+            { id: 13, title: "Spicy Tuna Poke", healthScore: 8.2, proteinType: "Seafood", proteinDesc: "2 cans (5 oz each) Tuna", base: "1 English cucumber, ¼ avocado", sauce: ["1 tbsp Mayo (Kewpie)", "1 tbsp Sriracha", "1 tsp Soy sauce", "Pinch of MSG", "Sesame seeds"], method: "Mix mayo/sriracha with tuna first to make a paste, then toss in cucumbers and shake.", macros: { cal: 480, pro: 46, fat: 22, carb: 16 }, shopping: { fresh: "Cucumber, Avocado", meat: "2 cans Tuna", pantry: "Kewpie Mayo, Sriracha, Soy sauce, MSG, Sesame seeds" } },
+            { id: 14, title: "Jalapeño Popper Chicken", healthScore: 8.1, proteinType: "Chicken", proteinDesc: "4 oz Chicken + 2 Slices Bacon", base: "1 English cucumber, Fresh Jalapeños", sauce: ["2 tbsp Greek Yogurt", "1 tbsp Parmesan", "Squirt of Sriracha", "1 tsp Cajun Seasoning", "Pinch of MSG"], method: "Combining chicken and bacon gives you the 'popper' vibe without needing pure fat.", macros: { cal: 360, pro: 32, fat: 15, carb: 13 }, shopping: { fresh: "Cucumber, Jalapeños", meat: "4oz Chicken, 2 Bacon slices", dairy: "Greek Yogurt, Parmesan", pantry: "Sriracha, Cajun Seasoning, MSG" } },
+            { id: 15, title: "Loaded Taco Shake", healthScore: 8.0, proteinType: "Beef", proteinDesc: "5 oz Ground Beef/Turkey (Taco Seasoned)", base: "1 English cucumber, Cherry tomatoes", sauce: ["2 tbsp Greek Yogurt", "2 tbsp Shredded Cheese", "2 tbsp Salsa", "Squeeze of Lime"], method: "The yogurt and salsa mix to create a creamy taco dressing that coats the beef.", macros: { cal: 410, pro: 38, fat: 19, carb: 15 }, shopping: { fresh: "Cucumber, Tomatoes, Lime", meat: "5 oz Ground Beef", dairy: "Greek Yogurt, Shredded Cheese", pantry: "Taco Seasoning, Salsa" } },
+            { id: 16, title: "Spicy Gherkin Chicken", healthScore: 7.9, proteinType: "Chicken", proteinDesc: "5 oz Cooked Chicken Breast", base: "1 English cucumber, 40g Diced Gherkins, 10g Jalapeños", sauce: ["2 tbsp Greek Yogurt", "Squirt Sriracha", "1 tsp Light Soy Sauce", "Garlic Powder, Chili Flakes"], method: "The extra pickles make this incredibly savory.", macros: { cal: 310, pro: 45, fat: 6, carb: 13 }, shopping: { fresh: "Cucumber, Jalapeños", meat: "5 oz Chicken", dairy: "Greek Yogurt", pantry: "Gherkins, Sriracha, Soy Sauce, Spices" } },
+            { id: 17, title: "Cold Sesame Beef", healthScore: 7.8, proteinType: "Beef", proteinDesc: "5 oz Flank Steak", base: "1 English cucumber", sauce: ["¼ cup Edamame", "1 tbsp Peanut butter", "1 tbsp Soy sauce", "1 tsp Chili oil", "1 tsp Rice vinegar", "Pinch of MSG"], method: "Cold steak can be tough; slicing it thin and shaking it with the acid helps tenderize it.", macros: { cal: 490, pro: 42, fat: 23, carb: 19 }, shopping: { fresh: "Cucumber", meat: "5 oz Flank Steak", frozen: "Edamame", pantry: "Peanut butter, Soy sauce, Chili oil, Rice vinegar, MSG" } },
+            { id: 18, title: "Pickle Brine Chicken", healthScore: 7.5, proteinType: "Chicken", proteinDesc: "5 oz Canned Chicken", base: "1 English cucumber, fresh dill", sauce: ["2 tbsp Pickle juice", "1 tsp Yellow Mustard", "1 tsp Garlic powder", "Pinch of MSG", "Black pepper"], method: "Canned chicken is salty and shreds easily; it absorbs the pickle juice better than any other meat.", macros: { cal: 240, pro: 32, fat: 5, carb: 12 }, shopping: { fresh: "Cucumber, Dill", meat: "5 oz Canned Chicken", pantry: "Pickle juice, Yellow Mustard, Spices" } },
+            { id: 19, title: "The 'Big Mac' Shake", healthScore: 7.4, proteinType: "Beef", proteinDesc: "5 oz Lean Ground Beef", base: "1 English cucumber, 1 tbsp white onion, dill pickle", sauce: ["2 tbsp Greek Yogurt", "1 slice Cheddar", "1 tsp Mayo", "1 tsp Ketchup", "1 tsp Yellow Mustard", "1 tsp Pickle Juice"], method: "Tastes exactly like the burger. The cucumber replaces the bun crunch.", macros: { cal: 420, pro: 38, fat: 22, carb: 14 }, shopping: { fresh: "Cucumber, White Onion", meat: "5 oz Ground Beef", dairy: "Cheddar, Greek Yogurt", pantry: "Pickles, Mayo, Ketchup, Mustard" } },
+            { id: 20, title: "Roast Beef & Horseradish", healthScore: 7.2, proteinType: "Deli", proteinDesc: "5 oz Deli Roast Beef", base: "1 English cucumber, red onion", sauce: ["1 tsp Horseradish", "1 tsp Dijon mustard", "1 tbsp Cider vinegar", "1 tsp Mayo"], method: "Roast beef is rich; the crisp cucumber and sharp horseradish cut the fat perfectly.", macros: { cal: 280, pro: 37, fat: 8, carb: 13 }, shopping: { fresh: "Cucumber, Red Onion", meat: "5 oz Deli Roast Beef", pantry: "Horseradish, Dijon, Cider vinegar, Mayo" } },
+            { id: 21, title: "The 'Club' (Turkey & Ham)", healthScore: 6.8, proteinType: "Deli", proteinDesc: "4 oz Turkey + 2 oz Ham", base: "1 English cucumber, ½ white onion", sauce: ["2 tbsp White vinegar", "1 tsp Sugar", "1 tsp Dijon mustard", "Salt & White pepper"], method: "The vinegar cures the deli meat slightly. Let this one sit for 10 mins if possible.", macros: { cal: 290, pro: 36, fat: 4, carb: 18 }, shopping: { fresh: "Cucumber, White Onion", meat: "4 oz Turkey, 2 oz Ham", pantry: "White vinegar, Sugar, Dijon, Spices" } }
+        ];
+
+        // --- State Management ---
+        let cart = JSON.parse(localStorage.getItem('cucumberCart')) || [];
+        let currentRecipeId = null;
+        let scatterChartInstance = null;
+        let barChartInstance = null;
+        let macroChartInstance = null;
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderRecipes(recipes);
+            initCharts();
+            updateCartCount();
+        });
+
+        // --- Core Logic ---
+        function filterRecipes() {
+            const protein = document.getElementById('proteinFilter').value;
+            const sort = document.getElementById('sortFilter').value;
+
+            let filtered = recipes.filter(r => protein === 'all' || r.proteinType === protein);
+
+            if (sort === 'healthDesc') filtered.sort((a, b) => b.healthScore - a.healthScore);
+            if (sort === 'calAsc') filtered.sort((a, b) => a.macros.cal - b.macros.cal);
+            if (sort === 'protDesc') filtered.sort((a, b) => b.macros.pro - a.macros.pro);
+
+            renderRecipes(filtered);
+            updateCharts(filtered); // Update main charts based on filter
+        }
+
+        function renderRecipes(data) {
+            const grid = document.getElementById('recipeGrid');
+            grid.innerHTML = '';
+
+            data.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden hover:shadow-md transition cursor-pointer flex flex-col h-full';
+                card.onclick = () => openRecipeModal(recipe.id);
+
+                // Health Score Color Logic
+                let healthColor = 'bg-emerald-100 text-emerald-800';
+                if(recipe.healthScore < 8) healthColor = 'bg-yellow-100 text-yellow-800';
+                if(recipe.healthScore < 7) healthColor = 'bg-red-100 text-red-800';
+
+                // Protein Icon Logic
+                let icon = '🍗';
+                if(recipe.proteinType === 'Beef') icon = '🥩';
+                if(recipe.proteinType === 'Seafood') icon = '🦐';
+                if(recipe.proteinType === 'Deli') icon = '🥪';
+
+                card.innerHTML = `
+                    <div class="p-6 flex-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-4xl">${icon}</span>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${healthColor}">
+                                Score: ${recipe.healthScore}
+                            </span>
+                        </div>
+                        <h4 class="text-xl font-bold text-stone-800 mb-2 leading-tight">${recipe.title}</h4>
+                        <p class="text-xs text-stone-500 mb-4 line-clamp-2">${recipe.method}</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 text-sm">
+                            <div class="bg-stone-50 p-2 rounded text-center">
+                                <span class="block font-bold text-emerald-700">${recipe.macros.pro}g</span>
+                                <span class="text-stone-400 text-xs">Protein</span>
+                            </div>
+                            <div class="bg-stone-50 p-2 rounded text-center">
+                                <span class="block font-bold text-stone-700">${recipe.macros.cal}</span>
+                                <span class="text-stone-400 text-xs">Cals</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 px-6 py-3 border-t border-emerald-100 flex justify-between items-center">
+                        <span class="text-xs font-semibold text-emerald-800">View Details</span>
+                        <span class="text-emerald-400">→</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- Modal Logic ---
+        function openRecipeModal(id) {
+            const recipe = recipes.find(r => r.id === id);
+            currentRecipeId = id;
+            if(!recipe) return;
+
+            document.getElementById('modalTitle').textContent = recipe.title;
+            document.getElementById('modalHealthBadge').textContent = `Health Score: ${recipe.healthScore}`;
+            document.getElementById('modalCalories').textContent = `${recipe.macros.cal} cal`;
+            document.getElementById('modalProtein').textContent = recipe.proteinDesc;
+            document.getElementById('modalBase').textContent = recipe.base;
+            document.getElementById('modalMethod').textContent = `"${recipe.method}"`;
+
+            // List Sauce
+            const sauceList = document.getElementById('modalSauce');
+            sauceList.innerHTML = recipe.sauce.map(s => `<li>${s}</li>`).join('');
+
+            // Shopping List
+            const shoppingDiv = document.getElementById('modalShopping');
+            let shoppingHTML = '';
+            if(recipe.shopping.fresh) shoppingHTML += `<div><strong class="block text-emerald-700">Fresh:</strong> ${recipe.shopping.fresh}</div>`;
+            if(recipe.shopping.meat) shoppingHTML += `<div><strong class="block text-emerald-700">Protein:</strong> ${recipe.shopping.meat}</div>`;
+            if(recipe.shopping.dairy) shoppingHTML += `<div><strong class="block text-emerald-700">Dairy:</strong> ${recipe.shopping.dairy}</div>`;
+            if(recipe.shopping.pantry) shoppingHTML += `<div><strong class="block text-emerald-700">Pantry:</strong> ${recipe.shopping.pantry}</div>`;
+            shoppingDiv.innerHTML = shoppingHTML;
+
+            // Macros Text
+            document.getElementById('modalPVal').textContent = recipe.macros.pro + 'g';
+            document.getElementById('modalFVal').textContent = recipe.macros.fat + 'g';
+            document.getElementById('modalCVal').textContent = recipe.macros.carb + 'g';
+
+            // Button State
+            updateModalBtnState();
+
+            // Macro Chart
+            renderMacroChart(recipe.macros);
+
+            document.getElementById('recipeModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('recipeModal').classList.add('hidden');
+        }
+
+        // --- Chart.js Logic ---
+        function initCharts() {
+            // Scatter Chart: Protein vs Calories
+            const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+            scatterChartInstance = new Chart(scatterCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Recipes',
+                        data: recipes.map(r => ({ x: r.macros.cal, y: r.macros.pro, title: r.title })),
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)', // Emerald-500
+                        borderColor: 'rgba(6, 95, 70, 0.8)', // Emerald-800
+                        borderWidth: 1,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.title + ': ' + context.raw.y + 'g Protein, ' + context.raw.x + ' Cals';
+                                }
+                            }
+                        },
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Calories' }, min: 200, max: 550 },
+                        y: { title: { display: true, text: 'Protein (g)' }, min: 25, max: 50 }
+                    }
+                }
+            });
+
+            // Bar Chart: Top Health Scores
+            const barCtx = document.getElementById('barChart').getContext('2d');
+            const sortedByHealth = [...recipes].sort((a,b) => b.healthScore - a.healthScore).slice(0, 10);
+            barChartInstance = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: sortedByHealth.map(r => r.title.substring(0, 15) + '...'),
+                    datasets: [{
+                        label: 'Health Score',
+                        data: sortedByHealth.map(r => r.healthScore),
+                        backgroundColor: 'rgba(217, 119, 6, 0.6)', // Amber-600
+                        borderColor: 'rgba(180, 83, 9, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: false, min: 6, max: 10 }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(filteredData) {
+            // Update Scatter
+            scatterChartInstance.data.datasets[0].data = filteredData.map(r => ({ x: r.macros.cal, y: r.macros.pro, title: r.title }));
+            scatterChartInstance.update();
+
+            // Update Bar (Top 10 of filtered)
+            const sorted = [...filteredData].sort((a,b) => b.healthScore - a.healthScore).slice(0, 10);
+            barChartInstance.data.labels = sorted.map(r => r.title.substring(0, 15) + '...');
+            barChartInstance.data.datasets[0].data = sorted.map(r => r.healthScore);
+            barChartInstance.update();
+        }
+
+        function renderMacroChart(macros) {
+            const ctx = document.getElementById('modalMacroChart').getContext('2d');
+            if (macroChartInstance) macroChartInstance.destroy();
+
+            macroChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Protein', 'Fat', 'Carbs'],
+                    datasets: [{
+                        data: [macros.pro, macros.fat, macros.carb],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)', // Protein Green
+                            'rgba(245, 158, 11, 0.8)', // Fat Amber
+                            'rgba(59, 130, 246, 0.8)'  // Carbs Blue
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        // --- Shopping List Logic ---
+        function toggleItemInCart(id) {
+            const index = cart.indexOf(id);
+            if (index === -1) {
+                cart.push(id);
+            } else {
+                cart.splice(index, 1);
+            }
+            saveCart();
+            updateModalBtnState();
+            updateCartCount();
+        }
+
+        function updateModalBtnState() {
+            const btn = document.getElementById('modalAddBtn');
+            if (cart.includes(currentRecipeId)) {
+                btn.textContent = "Remove from Shopping List";
+                btn.className = "w-full py-3 rounded-xl font-bold text-stone-600 bg-stone-200 hover:bg-stone-300 transition shadow-inner";
+            } else {
+                btn.textContent = "Add to Shopping List";
+                btn.className = "w-full py-3 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-md transform hover:scale-105";
+            }
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function saveCart() {
+            localStorage.setItem('cucumberCart', JSON.stringify(cart));
+            renderShoppingList();
+        }
+
+        function toggleShoppingModal() {
+            const modal = document.getElementById('shoppingModal');
+            if (modal.classList.contains('hidden')) {
+                renderShoppingList();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function renderShoppingList() {
+            const container = document.getElementById('shoppingListContent');
+            if (cart.length === 0) {
+                container.innerHTML = '<p class="text-stone-500 text-center py-8">Your list is empty. Add recipes to generate a list.</p>';
+                return;
+            }
+
+            const selectedRecipes = recipes.filter(r => cart.includes(r.id));
+            
+            let html = '';
+            selectedRecipes.forEach(r => {
+                html += `
+                    <div class="border-b border-stone-200 pb-4">
+                        <h5 class="font-bold text-emerald-800 flex justify-between">
+                            ${r.title}
+                            <button onclick="toggleItemInCart(${r.id}); toggleShoppingModal(); toggleShoppingModal();" class="text-xs text-red-500 hover:text-red-700">Remove</button>
+                        </h5>
+                        <ul class="text-sm text-stone-600 mt-2 list-disc list-inside">
+                            <li><strong>Protein:</strong> ${r.shopping.meat || r.shopping.seafood || 'See recipe'}</li>
+                            <li><strong>Fresh:</strong> ${r.shopping.fresh}</li>
+                            ${r.shopping.dairy ? `<li><strong>Dairy:</strong> ${r.shopping.dairy}</li>` : ''}
+                            <li><strong>Pantry Check:</strong> ${r.shopping.pantry}</li>
+                        </ul>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function clearCart() {
+            cart = [];
+            saveCart();
+            toggleShoppingModal();
+            updateCartCount();
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
