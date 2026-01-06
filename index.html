@@ -666,6 +666,8 @@
 
         // --- Shopping List Logic ---
         function toggleItemInCart(id, fromGrid = false) {
+            // Fix Duplicate Bug: Ensure ID is a number
+            id = Number(id);
             const index = cart.indexOf(id);
             if (index === -1) {
                 cart.push(id);
@@ -675,21 +677,18 @@
             saveCart();
 
             // Update Modal Button if open
-            if (currentRecipeId === id) {
+            if (Number(currentRecipeId) === id) {
                 updateModalBtnState();
             }
 
             updateCartCount();
-
-            // Be smart: if called from grid, just update that card. If called from modal, we need to update the grid card too.
-            // Actually, simplest is to re-render that specific card or just toggle classes manually for performance, 
-            // but re-rendering all is fast enough for 21 items. Let's do manual DOM update for smoothness.
             updateGridCardState(id);
         }
 
         function updateGridCardState(id) {
+            id = Number(id);
             const card = document.getElementById(`recipe-card-${id}`);
-            if (!card) return; // Might be filtered out currently
+            if (!card) return;
 
             const inCart = cart.includes(id);
             const btn = card.querySelector('.select-btn');
@@ -707,7 +706,7 @@
 
         function updateModalBtnState() {
             const btn = document.getElementById('modalAddBtn');
-            if (cart.includes(currentRecipeId)) {
+            if (cart.includes(Number(currentRecipeId))) {
                 btn.textContent = "Remove from Shopping List";
                 btn.className = "w-full py-3 rounded-xl font-bold text-stone-600 bg-stone-200 hover:bg-stone-300 transition shadow-inner";
             } else {
@@ -721,8 +720,13 @@
         }
 
         function saveCart() {
+            // Sanitize: unique numbers only
+            cart = [...new Set(cart.map(Number))];
             localStorage.setItem('cucumberCart', JSON.stringify(cart));
-            renderShoppingList();
+            // If modal is open, re-render to show immediate changes
+            if (!document.getElementById('shoppingModal').classList.contains('hidden')) {
+                renderShoppingList();
+            }
         }
 
         function toggleShoppingModal() {
@@ -744,30 +748,79 @@
 
             const selectedRecipes = recipes.filter(r => cart.includes(r.id));
 
-            let html = '';
+            // AGGREGATION LOGIC
+            const categories = {
+                "Produce": {},
+                "Protein": {},
+                "Dairy & Refrigerated": {},
+                "Pantry Items": {}
+            };
+
+            const mapIngredients = (sourceStr, category) => {
+                if (!sourceStr) return;
+                const items = sourceStr.split(',').map(s => s.trim());
+                items.forEach(item => {
+                    // Substitutions & Normalization
+                    let finalItem = item;
+                    let finalCategory = category;
+
+                    if (item.toLowerCase() === 'limes' || item.toLowerCase() === 'lime') {
+                        finalItem = "Lime Juice (Bottle)";
+                        finalCategory = "Pantry Items"; // User prefers buying the juice, usually pantry/fridge
+                    }
+
+                    categories[finalCategory][finalItem] = (categories[finalCategory][finalItem] || 0) + 1;
+                });
+            };
+
             selectedRecipes.forEach(r => {
-                html += `
-                    <div class="border-b border-stone-200 pb-4">
-                        <h5 class="font-bold text-emerald-800 flex justify-between">
-                            ${r.title}
-                            <button onclick="toggleItemInCart(${r.id}); toggleShoppingModal(); toggleShoppingModal();" class="text-xs text-red-500 hover:text-red-700">Remove</button>
-                        </h5>
-                        <ul class="text-sm text-stone-600 mt-2 list-disc list-inside">
-                            <li><strong>Protein:</strong> ${r.shopping.meat || r.shopping.seafood || 'See recipe'}</li>
-                            <li><strong>Fresh:</strong> ${r.shopping.fresh}</li>
-                            ${r.shopping.dairy ? `<li><strong>Dairy:</strong> ${r.shopping.dairy}</li>` : ''}
-                            <li><strong>Pantry Check:</strong> ${r.shopping.pantry}</li>
-                        </ul>
-                    </div>
-                `;
+                mapIngredients(r.shopping.fresh, "Produce");
+                mapIngredients(r.shopping.meat, "Protein");
+                mapIngredients(r.shopping.dairy, "Dairy & Refrigerated");
+                // Fallback for meat appearing in protein if not separate
+                if (!r.shopping.meat && !r.shopping.dairy && !r.shopping.pantry) {
+                    // Safety net if data structure varies, but current data is consistent
+                }
+                mapIngredients(r.shopping.pantry, "Pantry Items");
             });
+
+            // RENDER HTML based on aggregation
+            let html = '';
+
+            for (const [cat, items] of Object.entries(categories)) {
+                if (Object.keys(items).length === 0) continue;
+
+                html += `<div class="mb-6"><h4 class="font-bold text-emerald-800 border-b border-emerald-100 pb-1 mb-3">${cat}</h4><ul class="space-y-2">`;
+
+                for (const [name, count] of Object.entries(items)) {
+                    html += `
+                        <li class="flex items-start">
+                            <input type="checkbox" class="mt-1 mr-3 h-4 w-4 text-emerald-600 border-stone-300 rounded focus:ring-emerald-500">
+                            <span class="text-stone-700">
+                                <span class="font-bold text-emerald-700 w-6 inline-block text-right mr-1">${count}x</span> ${name}
+                            </span>
+                        </li>
+                    `;
+                }
+                html += `</ul></div>`;
+            }
+
+            // Footer: Recipe List
+            const recipeNames = selectedRecipes.map(r => r.title).join(', ');
+            html += `
+                <div class="mt-8 pt-4 border-t border-stone-200 text-xs text-stone-500">
+                    <p class="font-bold mb-1">Recipes Accounted For (${selectedRecipes.length}):</p>
+                    <p>${recipeNames}</p>
+                </div>
+            `;
+
             container.innerHTML = html;
         }
 
         function clearCart() {
             cart = [];
             saveCart();
-            toggleShoppingModal();
+            renderShoppingList(); // Re-render to show empty state
             updateCartCount();
         }
 
