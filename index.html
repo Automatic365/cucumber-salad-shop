@@ -758,15 +758,25 @@
 
             const mapIngredients = (sourceStr, category) => {
                 if (!sourceStr) return;
+
+                const SUBSTITUTIONS = {
+                    'limes': { name: 'Lime Juice (Bottle)', cat: 'Pantry Items' },
+                    'lime': { name: 'Lime Juice (Bottle)', cat: 'Pantry Items' },
+                    'lemons': { name: 'Lemon Juice (Bottle)', cat: 'Pantry Items' },
+                    'lemon': { name: 'Lemon Juice (Bottle)', cat: 'Pantry Items' },
+                    'garlic': { name: 'Garlic Paste (Tube)', cat: 'Pantry Items' },
+                    'ginger': { name: 'Ginger Paste (Tube)', cat: 'Pantry Items' }
+                };
+
                 const items = sourceStr.split(',').map(s => s.trim());
                 items.forEach(item => {
-                    // Substitutions & Normalization
                     let finalItem = item;
                     let finalCategory = category;
+                    const lowerItem = item.toLowerCase();
 
-                    if (item.toLowerCase() === 'limes' || item.toLowerCase() === 'lime') {
-                        finalItem = "Lime Juice (Bottle)";
-                        finalCategory = "Pantry Items"; // User prefers buying the juice, usually pantry/fridge
+                    if (SUBSTITUTIONS[lowerItem]) {
+                        finalItem = SUBSTITUTIONS[lowerItem].name;
+                        finalCategory = SUBSTITUTIONS[lowerItem].cat;
                     }
 
                     categories[finalCategory][finalItem] = (categories[finalCategory][finalItem] || 0) + 1;
