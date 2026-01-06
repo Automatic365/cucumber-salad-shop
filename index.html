@@ -832,6 +832,9 @@
             saveCart();
             renderShoppingList(); // Re-render to show empty state
             updateCartCount();
+
+            // Visual Update: Reset all recipe cards to unselected
+            recipes.forEach(r => updateGridCardState(r.id));
         }
 
         function scrollToSection(id) {
